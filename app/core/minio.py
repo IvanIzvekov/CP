@@ -1,0 +1,16 @@
+import aioboto3
+from typing import AsyncGenerator
+from app.core.config import settings
+from contextlib import asynccontextmanager
+
+session = aioboto3.Session()
+
+@asynccontextmanager
+async def get_s3_client() -> AsyncGenerator:
+    async with session.client(
+        "s3",
+        endpoint_url=settings.MINIO_ENDPOINT,
+        aws_access_key_id=settings.ACCESS_KEY,
+        aws_secret_access_key=settings.SECRET_KEY,
+    ) as client:
+        yield client

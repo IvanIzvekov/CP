@@ -1,0 +1,7 @@
+Generic single-database configuration.
+
+Создать миграцию:
+alembic revision --autogenerate -m "Added field xyz"
+
+Применить ее к базе:
+alembic upgrade head
