@@ -1,0 +1,28 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+rule_files: []
+
+scrape_configs:
+  # Метрики самого Prometheus
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+        labels:
+          app: "prometheus"
+
+  # Метрики FastAPI
+  - job_name: "fastapi"
+    metrics_path: /metrics
+    scheme: http
+    bearer_token: "_th1b7jmOR"   # токен авторизации Bearer
+    static_configs:
+      - targets: ["fastapi:8000"]
+        labels:
+          app: "fastapi"

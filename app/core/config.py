@@ -10,8 +10,8 @@ class Settings(BaseSettings):
     MINIO_ROOT_USER: str
     MINIO_ROOT_PASSWORD: str
     MINIO_ENDPOINT: str
-    ACCESS_KEY: str
-    SECRET_KEY: str
+
+    METRICS_TOKEN: str
 
     model_config = {
         "env_file": ".env",

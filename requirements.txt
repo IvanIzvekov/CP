@@ -1,8 +1,0 @@
-aioboto3
-fastapi
-uvicorn[standard]
-sqlalchemy[asyncio]
-asyncpg
-pydantic
-pydantic-settings
-alembic

@@ -1,14 +1,14 @@
 Создать миграцию:
 
-alembic revision --autogenerate -m "Added field xyz"
+docker compose run --rm fastapi alembic revision --autogenerate -m "новая миграция"
+
 
 Применить ее к базе:
 
-alembic upgrade head
+docker compose run --rm fastapi alembic upgrade head
 
 
+запуск прометеуса для сбора метрик
 
+prometheus --config.file=prometheus.yml
 
-Ссылка для загрузки exe s3 хранилища 
-
-https://dl.min.io/server/minio/release/windows-amd64/minio.exe
