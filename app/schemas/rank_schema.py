@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class RankRead(BaseModel):
     id: int
     name: str

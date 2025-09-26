@@ -10,10 +10,26 @@ services:
     env_file:
       - .env
     depends_on:
-      - minio
-      - postgres
+      postgres:
+        condition: service_healthy
+      redis:
+          condition: service_started
+      minio:
+          condition: service_started
     networks:
       - app_net
+
+#  parlant_app:
+#    build: ./parlant_app
+#    container_name: parlant_app
+#    ports:
+#      - "8010:8010"
+#    env_file:
+#      - .env
+#    depends_on:
+#      - redis
+#    networks:
+#      - app_net
 
   minio:
     image: minio/minio:latest
@@ -50,6 +66,11 @@ services:
       - .env
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
       - app_net
 
@@ -61,6 +82,8 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheusdata:/prometheus
+    depends_on:
+      - fastapi
     networks:
       - app_net
 

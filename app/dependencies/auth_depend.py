@@ -1,21 +1,45 @@
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Optional
-from app.services.user_service import check_token
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.ext.asyncio import AsyncSession
 
-# создаём схему авторизации один раз
-http_bearer = HTTPBearer(auto_error=True)  # auto_error=True — автоматически выдаёт 401 если нет токена
+from app.core.database import get_session
+from app.exceptions.exceptions import InvalidRefreshTokenError, UserNotFoundError
+from app.repositories.user_repository import UserRepository
+from app.services.auth_service import AuthService
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+
 
 async def check_auth_dep(
-    credentials: HTTPAuthorizationCredentials = Depends(http_bearer)
-):
+    token: str = Depends(oauth2_scheme),
+    session: AsyncSession = Depends(get_session),
+) -> int:
+    user_repo = UserRepository(session)
+    service = AuthService(user_repo)
 
-    token = credentials.credentials
+    try:
+        user_id = await service.verify_token(token, "access")
+        try:
+            user = await user_repo.get_by_id(user_id)
+        except UserNotFoundError:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired access token",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
 
-    if not token:
+        if user.get("is_deleted"):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired access token",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        return user.get("id")
+    except InvalidRefreshTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authorization token missing"
+            detail="Invalid or expired access token",
+            headers={"WWW-Authenticate": "Bearer"},
         )
-
-    return await check_token(token)

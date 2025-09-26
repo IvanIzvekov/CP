@@ -1,7 +1,8 @@
-from sqlalchemy.orm import DeclarativeBase, relationship
-from sqlalchemy import Integer, String, Column, TIMESTAMP, Boolean
-from sqlalchemy.sql import func
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
+
 from app.models.base_model import Base
+
 
 class Post(Base):
     __tablename__ = "posts"
@@ -10,4 +11,3 @@ class Post(Base):
     name = Column(String(255), nullable=False)
 
     users = relationship("User", back_populates="post")
-

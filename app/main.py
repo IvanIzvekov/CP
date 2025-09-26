@@ -1,21 +1,33 @@
-from fastapi import FastAPI, Request, HTTPException
-from starlette.responses import PlainTextResponse
-from prometheus_fastapi_instrumentator import Instrumentator
-from app.core.config import settings
-from app.api.v1 import user_routers, auth_routers, minio_routers
+from contextlib import asynccontextmanager
 
-app = FastAPI(title="CP")
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
+from prometheus_fastapi_instrumentator import Instrumentator
+from sqlalchemy.exc import DBAPIError, OperationalError, SQLAlchemyError
+from starlette.responses import PlainTextResponse
+
+from app.api.v1 import auth_routers, minio_routers, shedule_routers, user_routers
+from app.core.config import settings
+from app.core.database import engine, init_db, shutdown_db
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db(engine)
+    yield
+    await shutdown_db(engine)
+
+
+app = FastAPI(title="CP", lifespan=lifespan)
 
 # Настраиваем инструментатор сразу после создания app
 instrumentator = Instrumentator(
-    should_group_status_codes=False,
-    should_ignore_untemplated=True
+    should_group_status_codes=False, should_ignore_untemplated=True
 )
-instrumentator.instrument(app)  # добавляем middleware
-# не вызываем expose(app) — используем свой endpoint
+instrumentator.instrument(app)
 
-# Сохраняем в state для доступа из /metrics
 app.state.instrumentator = instrumentator
+
 
 @app.get("/metrics")
 async def metrics(request: Request):
@@ -27,10 +39,39 @@ async def metrics(request: Request):
     registry = instrumentator.registry
 
     from prometheus_client import generate_latest
-    return PlainTextResponse(generate_latest(registry), media_type="text/plain")
+
+    return PlainTextResponse(
+        generate_latest(registry), media_type="text/plain"
+    )
+
+
+@app.middleware("http")
+async def db_exception_middleware(request: Request, call_next):
+    try:
+        response = await call_next(request)
+        return response
+    except OperationalError as e:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "detail": "Database is unavailable. Please try again later."
+            },
+        )
+    except DBAPIError as e:
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Database driver error occurred."},
+        )
+    except SQLAlchemyError as e:
+        return JSONResponse(
+            status_code=500, content={"detail": "Database error occurred."}
+        )
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"detail": str(e)})
 
 
 # Роутеры
 app.include_router(user_routers.router, prefix="/api/v1")
 app.include_router(auth_routers.router, prefix="/api/v1")
 app.include_router(minio_routers.router, prefix="/api/v1")
+app.include_router(shedule_routers.router, prefix="/api/v1")

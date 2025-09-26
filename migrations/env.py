@@ -1,17 +1,18 @@
 import asyncio
-from logging.config import fileConfig
-import sys
 import os
+import sys
+from logging.config import fileConfig
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import create_async_engine
-from alembic import context
 
-from app.models.base_model import Base  # твой Base
 from app.core.config import settings
 from app.models import *
+from app.models.base_model import Base  # твой Base
+
 # Подключаем метаданные для автогенерации миграций
 target_metadata = Base.metadata
 

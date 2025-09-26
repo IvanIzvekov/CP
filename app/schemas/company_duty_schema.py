@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class CompanyDutyRead(BaseModel):
     id: int
     name: str

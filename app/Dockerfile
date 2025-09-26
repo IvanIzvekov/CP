@@ -16,8 +16,8 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Установка зависимостей с приоритетом бинарных колес
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir --prefer-binary -r requirements.txt
+RUN pip install --upgrade pip \
+    && pip install --prefer-binary -r requirements.txt
 
 # Копируем исходный код
 COPY . /app/app

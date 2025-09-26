@@ -1,8 +1,10 @@
+from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.orm import relationship
-from sqlalchemy import Integer, String, Column, Boolean
 from sqlalchemy.sql import func
+
+from app.models.association_tables import associate_users_projects
 from app.models.base_model import Base
-from app.models.association_tables import user_projects
+
 
 class Project(Base):
     __tablename__ = "projects"
@@ -13,6 +15,6 @@ class Project(Base):
     is_active = Column(Boolean, nullable=False)
     photo = Column(String, nullable=True)
 
-    users = relationship("User", secondary=user_projects, back_populates="projects")
-
-
+    users = relationship(
+        "User", secondary=associate_users_projects, back_populates="projects"
+    )
