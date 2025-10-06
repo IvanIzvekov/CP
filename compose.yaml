@@ -1,6 +1,6 @@
 services:
   fastapi:
-    build: ./app
+    build: .
     container_name: fastapi_app
     ports:
       - "8000:8000"
@@ -13,23 +13,56 @@ services:
       postgres:
         condition: service_healthy
       redis:
-          condition: service_started
+        condition: service_started
       minio:
-          condition: service_started
+        condition: service_started
     networks:
       - app_net
 
-#  parlant_app:
-#    build: ./parlant_app
-#    container_name: parlant_app
-#    ports:
-#      - "8010:8010"
-#    env_file:
-#      - .env
-#    depends_on:
-#      - redis
-#    networks:
-#      - app_net
+  fastapi-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./alembic.ini:/app/alembic.ini
+      - ./migrations:/app/migrations
+    environment:
+      - WATCHFILES_FORCE_POLLING=true
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      minio:
+        condition: service_started
+    networks:
+      - app_net
+    develop:
+      watch:
+        - path: .
+          target: ./app/app
+          action: sync
+          initial_sync: true
+        - path: requirements.txt
+          action: rebuild
+
+  #  parlant_app:
+  #    build: ./parlant_app
+  #    container_name: parlant_app
+  #    ports:
+  #      - "8010:8010"
+  #    env_file:
+  #      - .env
+  #    depends_on:
+  #      - redis
+  #    networks:
+  #      - app_net
 
   minio:
     image: minio/minio:latest
@@ -52,7 +85,7 @@ services:
       - "6379:6379"
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-    command: [ "redis-server", "--requirepass", "${REDIS_PASSWORD}" ]
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
     networks:
       - app_net
 
@@ -67,7 +100,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -91,7 +124,7 @@ services:
     image: grafana/grafana:latest
     container_name: grafana
     ports:
-      - "3001:3000"   # изменён порт на 3001
+      - "3001:3000" # изменён порт на 3001
     env_file:
       - .env
     volumes:

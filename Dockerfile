@@ -17,13 +17,13 @@ COPY requirements.txt .
 
 # Установка зависимостей с приоритетом бинарных колес
 RUN pip install --upgrade pip \
-    && pip install --prefer-binary -r requirements.txt
+    && pip install --prefer-binary --no-cache-dir -r requirements.txt
 
 # Копируем исходный код
-COPY . /app/app
+COPY ./app /app
 
 # Экспонируем порт FastAPI
 EXPOSE 8000
 
 # Запуск приложения
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
