@@ -1,0 +1,15 @@
+[2025-10-13 18:27:29,029] [ERROR] [app/logger] (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.UniqueViolationError'>: duplicate key value violates unique constraint "users_username_key"
+DETAIL:  Key (username)=(admin) already exists.
+[SQL: INSERT INTO users (id, username, name, surname, second_name, short_name, short_name_2, hashed_password, is_superuser, is_deleted, register_at, post_id, rank_id, invocation) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::BOOLEAN, $10::BOOLEAN, now(), $11::UUID, $12::UUID, $13::VARCHAR) RETURNING users.register_at]
+[parameters: (UUID('5571190c-c05d-4e9a-bcaa-7f4457b095c2'), 'admin', 'admin', 'admin', 'admin', 'a. admin', 'admin a.a.', 'admin', False, False, UUID('32fa1b2d-300e-49a0-9ba2-a7d699c79b7e'), UUID('13ddd1b7-4d4a-4b7f-998e-dee2371bdb68'), 'Аккаунт модератора')]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+[2025-10-13 18:31:12,329] [ERROR] [app/logger] (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.UniqueViolationError'>: duplicate key value violates unique constraint "users_username_key"
+DETAIL:  Key (username)=(admin) already exists.
+[SQL: INSERT INTO users (id, username, name, surname, second_name, short_name, short_name_2, hashed_password, is_superuser, is_deleted, register_at, post_id, rank_id, invocation) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::BOOLEAN, $10::BOOLEAN, now(), $11::UUID, $12::UUID, $13::VARCHAR) RETURNING users.register_at]
+[parameters: (UUID('4d98ffa8-4add-4794-89fa-3fef9a2a03c0'), 'admin', 'admin', 'admin', 'admin', 'a. admin', 'admin a.a.', 'admin', False, False, UUID('601807d3-f31c-4056-9832-5961a6271ce5'), UUID('80084cb9-8d73-4e8f-8010-838613916d9b'), 'Аккаунт модератора')]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+[2025-10-14 09:11:54,716] [ERROR] [app/logger] (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.UniqueViolationError'>: duplicate key value violates unique constraint "users_username_key"
+DETAIL:  Key (username)=(admin) already exists.
+[SQL: INSERT INTO users (id, username, name, surname, second_name, short_name, short_name_2, hashed_password, is_superuser, is_deleted, register_at, post_id, rank_id, invocation) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::BOOLEAN, $10::BOOLEAN, now(), $11::UUID, $12::UUID, $13::VARCHAR) RETURNING users.register_at]
+[parameters: (UUID('29170b1c-fe4d-4cc6-88cb-3725130f2574'), 'admin', 'admin', 'admin', 'admin', 'a. admin', 'admin a.a.', 'admin', False, False, UUID('4d9c4326-b612-4030-9be2-dedc4eea49a5'), UUID('e5e9de30-8a20-480c-9026-cead2ceac79d'), 'Аккаунт модератора')]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)

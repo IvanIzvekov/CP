@@ -1,6 +1,6 @@
-from sqlalchemy import TIMESTAMP, Boolean, Column, ForeignKey, Integer, String, Table
-from sqlalchemy.orm import DeclarativeBase, relationship
-from sqlalchemy.sql import func
+from sqlalchemy import Column, String, UUID
+from sqlalchemy.orm import relationship
+import uuid
 
 from app.models.association_tables import associate_users_duties
 from app.models.base_model import Base
@@ -9,7 +9,7 @@ from app.models.base_model import Base
 class CompanyDuty(Base):
     __tablename__ = "company_duties"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     name = Column(String(255), nullable=False)
 
     users = relationship(

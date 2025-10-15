@@ -1,5 +1,6 @@
-from sqlalchemy import TIMESTAMP, Column, ForeignKey, Integer, String, func
+from sqlalchemy import TIMESTAMP, Column, ForeignKey, String, func, UUID
 from sqlalchemy.orm import relationship
+import uuid
 
 from app.models.base_model import Base
 
@@ -7,9 +8,9 @@ from app.models.base_model import Base
 class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     user_id = Column(
-        Integer,
+        UUID,
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         unique=True,

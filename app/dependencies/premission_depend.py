@@ -1,17 +1,17 @@
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import UUID
 
-from app.repositories.user_repository import UserRepository
-from app.services.permission_service import PermissionService
-
+from app.entities.user import UserEntity
 
 async def check_upload_permission(
-    duty_id: int, user_id: int, session: AsyncSession
+    duty_id: UUID, user: UserEntity, session: AsyncSession
 ):
-    user_repo = UserRepository(session)
-    permission_service = PermissionService(user_repo)
-    if not await permission_service.can_upload_vigils(user_id, duty_id):
+    if user.is_superuser:
+        return True
+
+    if not duty_id in [duty.id for duty in user.duties]:
         raise HTTPException(
             status_code=403, detail="You don't have permissions"
         )
-    return user_id
+    return True

@@ -2,6 +2,7 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from typing import Tuple
+from uuid import UUID
 
 import jwt
 from passlib.context import CryptContext
@@ -27,7 +28,7 @@ class AuthService:
         )
 
     async def _create_token(
-        self, user_id: int, expires_delta: timedelta, token_type: str
+        self, user_id: UUID, expires_delta: timedelta, token_type: str
     ) -> str:
         loop = asyncio.get_running_loop()
         expire = datetime.utcnow() + expires_delta
@@ -40,14 +41,14 @@ class AuthService:
             self.ALGORITHM,
         )
 
-    async def create_access_token(self, user_id: int) -> str:
+    async def create_access_token(self, user_id: UUID) -> str:
         return await self._create_token(
             user_id,
             timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
             "access",
         )
 
-    async def create_refresh_token(self, user_id: int) -> str:
+    async def create_refresh_token(self, user_id: UUID) -> str:
         return await self._create_token(
             user_id,
             timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
@@ -56,7 +57,7 @@ class AuthService:
 
     async def verify_token(
         self, token: str, token_type: str = "access"
-    ) -> int:
+    ) -> UUID:
         loop = asyncio.get_running_loop()
         try:
             payload = await loop.run_in_executor(
@@ -68,7 +69,7 @@ class AuthService:
             )
             if payload.get("type") != token_type:
                 raise InvalidRefreshTokenError("Invalid token type")
-            user = int(payload.get("sub"))
+            user = UUID(payload.get("sub"))
             return user
         except jwt.PyJWTError:
             raise InvalidRefreshTokenError("Invalid or expired token")
@@ -76,16 +77,16 @@ class AuthService:
     async def login(self, username: str, password: str) -> Tuple[str, str]:
         user = await self.repo.get_by_username(username)
         if not user or not await self.verify_password(
-            password, user["hashed_password"]
+            password, user.hashed_password
         ):
             raise InvalidCredentialsError("Incorrect username or password")
 
         access, refresh = await asyncio.gather(
-            self.create_access_token(user["id"]),
-            self.create_refresh_token(user["id"]),
+            self.create_access_token(user.id),
+            self.create_refresh_token(user.id),
         )
 
-        await self.repo.save_refresh_token(user["id"], refresh)
+        await self.repo.save_refresh_token(user.id, refresh)
         return access, refresh
 
     async def refresh_tokens(self, refresh_token: str) -> Tuple[str, str]:

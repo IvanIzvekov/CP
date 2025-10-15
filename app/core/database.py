@@ -11,6 +11,11 @@ from app.models.posts_model import Post
 from app.models.projects_model import Project
 from app.models.ranks_model import Rank
 from app.models.user_model import User
+from app.models.schedule_vigil_model import ScheduleVigil
+from app.models.refresh_token_model import RefreshToken
+from app.models.vigils_enum_model import VigilEnum
+from app.models.task_model import Task
+
 
 engine = create_async_engine(settings.DB_URL, echo=True, future=True)
 SessionLocal = async_sessionmaker(

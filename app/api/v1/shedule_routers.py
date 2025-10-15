@@ -1,21 +1,44 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
+from app.entities.user import UserEntity
+from app.schemas.schedule_schema import ReadVigils
 from app.core.database import get_session
 from app.dependencies.auth_depend import check_auth_dep
 from app.dependencies.premission_depend import check_upload_permission
 from app.repositories.schedule_repository import ScheduleRepository
+from app.repositories.user_repository import UserRepository
 from app.services.schedule_service import ScheduleService
+from app.services.user_service import UserService
+from app.exceptions.exceptions import ExcelParsingError, VigilsTypeNotFound, UserNotFoundError
 
 router = APIRouter(prefix="/schedule", tags=["schedule"])
+
+
+@router.get("/vigils")
+async def get_vigils(
+    params: ReadVigils = Depends(),
+    session=Depends(get_session),
+    user: UserEntity = Depends(check_auth_dep),
+):
+    service = ScheduleService(ScheduleRepository(session))
+    try:
+        kwargs = params.model_dump()
+
+        vigils = await service.get_vigils(**kwargs)
+        return [vigil.to_dict() for vigil in vigils]
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/vigils")
 async def upload_vigils(
     file: UploadFile = File(..., description="Excel файл с расписанием"),
     session=Depends(get_session),
-    user_id: int = Depends(check_auth_dep),
+    user: UserEntity = Depends(check_auth_dep),
 ):
-    await check_upload_permission(duty_id=3, user_id=user_id, session=session)
+    await check_upload_permission(duty_id=UUID("180cd959-23d7-4fff-a7b7-da29e73bea9a"), user=user, session=session)
     if not file.filename.endswith(".xlsx"):
         raise HTTPException(
             status_code=400,
@@ -28,12 +51,17 @@ async def upload_vigils(
     ]:
         raise HTTPException(status_code=400, detail="Неверный формат файла")
 
-    shedule_repo = ScheduleRepository(session)
-    service = ScheduleService(shedule_repo)
+    schedule_service = ScheduleService(ScheduleRepository(session))
+    user_service = UserService(UserRepository(session))
     try:
-        # TODO НАЙТИ ГДЕ УЖЕ ОТКРЫВАЕТСЯ ТРАНЗАКЦИЯ
-        async with session.begin():
-            pass
+        file_bytes = await file.read()
+        info = await schedule_service.process_vigils_schedule(file_bytes)
+        all_users = await user_service.get_users_from_ids()
+        await schedule_service.create_vigils(info, all_users)
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except UserNotFoundError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except VigilsTypeNotFound as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except ExcelParsingError as e:
+        raise HTTPException(status_code=400, detail=str(e))

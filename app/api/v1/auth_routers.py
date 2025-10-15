@@ -24,10 +24,9 @@ async def login(
     service = AuthService(repo)
 
     try:
-        async with session.begin():
-            access, refresh = await service.login(
-                form_data.username, form_data.password
-            )
+        access, refresh = await service.login(
+            form_data.username, form_data.password
+        )
         return TokenResponse(access_token=access, refresh_token=refresh)
     except (InvalidCredentialsError, UserNotFoundError) as e:
         raise HTTPException(status_code=401, detail=str(e))
@@ -43,8 +42,8 @@ async def refresh(
     service = AuthService(repo)
 
     try:
-        async with session.begin():
-            access, refresh = await service.refresh_tokens(body.refresh_token)
+
+        access, refresh = await service.refresh_tokens(body.refresh_token)
         return TokenResponse(access_token=access, refresh_token=refresh)
     except InvalidRefreshTokenError as e:
         raise HTTPException(status_code=401, detail=str(e))

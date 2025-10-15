@@ -20,3 +20,15 @@ class UserNotFoundRefreshTokenError(Exception):
 
 class UserDutiesNotFoundError(Exception):
     pass
+
+class ExcelParsingError(Exception):
+    pass
+
+class VigilsTypeNotFound(Exception):
+    pass
+
+class NoVigilsDataFromExcel(Exception):
+    pass
+
+class ResponsibleTypeError(Exception):
+    pass
