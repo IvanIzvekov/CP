@@ -9,7 +9,13 @@ from app.models.base_model import Base
 class Project(Base):
     __tablename__ = "projects"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
     name = Column(String(255), nullable=False)
     annotation = Column(String(255), nullable=False)
     description = Column(String, nullable=False)

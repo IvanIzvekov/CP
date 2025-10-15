@@ -1,7 +1,7 @@
-from app.entities.base_entity import BaseEntity
+from dataclasses import dataclass
 from uuid import UUID
 
-from dataclasses import dataclass
+from app.entities.base_entity import BaseEntity
 
 
 @dataclass

@@ -1,16 +1,23 @@
-from sqlalchemy import TIMESTAMP, Boolean, Column, ForeignKey, String, UUID
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
 import uuid
 
-from app.models.base_model import Base
+from sqlalchemy import TIMESTAMP, UUID, Boolean, Column, ForeignKey, String
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+
 from app.models.association_tables import associate_task_responsibles
+from app.models.base_model import Base
 
 
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
     username = Column(String(50), nullable=False, unique=True)
 
     name = Column(String(100), nullable=False)
@@ -25,9 +32,7 @@ class User(Base):
     register_at = Column(TIMESTAMP, default=func.now())
 
     post_id = Column(UUID, ForeignKey("posts.id"), nullable=True)
-    rank_id = Column(
-        UUID, ForeignKey("ranks.id"), nullable=False, default=1
-    )
+    rank_id = Column(UUID, ForeignKey("ranks.id"), nullable=False, default=1)
     invocation = Column(String(50), nullable=False)
 
     duties = relationship(
@@ -47,12 +52,12 @@ class User(Base):
         "Task",
         secondary=associate_task_responsibles,
         back_populates="responsible",
-        lazy="selectin"
+        lazy="selectin",
     )
 
     owned_tasks = relationship(
         "Task",
         back_populates="owner_user",
         foreign_keys="Task.owner_id",
-        lazy="selectin"
+        lazy="selectin",
     )

@@ -8,7 +8,13 @@ from app.models.base_model import Base
 class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
     user_id = Column(
         UUID,
         ForeignKey("users.id", ondelete="CASCADE"),

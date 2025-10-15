@@ -2,16 +2,20 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
-from app.entities.user import UserEntity
-from app.schemas.schedule_schema import ReadVigils
 from app.core.database import get_session
 from app.dependencies.auth_depend import check_auth_dep
 from app.dependencies.premission_depend import check_upload_permission
+from app.entities.user import UserEntity
+from app.exceptions.exceptions import (
+    ExcelParsingError,
+    UserNotFoundError,
+    VigilsTypeNotFound,
+)
 from app.repositories.schedule_repository import ScheduleRepository
 from app.repositories.user_repository import UserRepository
+from app.schemas.schedule_schema import ReadVigils
 from app.services.schedule_service import ScheduleService
 from app.services.user_service import UserService
-from app.exceptions.exceptions import ExcelParsingError, VigilsTypeNotFound, UserNotFoundError
 
 router = APIRouter(prefix="/schedule", tags=["schedule"])
 
@@ -38,7 +42,11 @@ async def upload_vigils(
     session=Depends(get_session),
     user: UserEntity = Depends(check_auth_dep),
 ):
-    await check_upload_permission(duty_id=UUID("180cd959-23d7-4fff-a7b7-da29e73bea9a"), user=user, session=session)
+    await check_upload_permission(
+        duty_id=UUID("180cd959-23d7-4fff-a7b7-da29e73bea9a"),
+        user=user,
+        session=session,
+    )
     if not file.filename.endswith(".xlsx"):
         raise HTTPException(
             status_code=400,

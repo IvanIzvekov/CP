@@ -10,27 +10,37 @@ from app.models.base_model import Base
 class Task(Base):
     __tablename__ = "tasks"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
     text = Column(String, nullable=False)
 
-    owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    owner_id = Column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False
+    )
 
     owner = relationship(
         "User",
         back_populates="owned_tasks",
         foreign_keys=[owner_id],
-        lazy="selectin"
+        lazy="selectin",
     )
 
     responsible = relationship(
         "User",
         secondary=associate_task_responsibles,
         back_populates="responsible_tasks",
-        lazy="selectin"
+        lazy="selectin",
     )
 
     created_at = Column(TIMESTAMP, nullable=False, default=datetime.now)
-    updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
+    updated_at = Column(
+        TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now
+    )
     deleted_at = Column(TIMESTAMP, nullable=True)
 
     is_deleted = Column(Boolean, nullable=False, default=False)
@@ -42,7 +52,5 @@ class Task(Base):
     can_be_deleted = Column(Boolean, default=True)
 
     attachments = relationship(
-        "Attachment",
-        back_populates="task",
-        cascade="all, delete-orphan"
+        "Attachment", back_populates="task", cascade="all, delete-orphan"
     )

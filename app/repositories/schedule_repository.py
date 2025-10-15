@@ -18,8 +18,14 @@ class ScheduleRepository(IScheduleRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-
-    async def get_vigils(self, start_at:datetime=None, end_at:datetime=None, user_ids:List[UUID]=None, vigil_ids:List[UUID]=None, ignore_id:int=None):
+    async def get_vigils(
+        self,
+        start_at: datetime = None,
+        end_at: datetime = None,
+        user_ids: List[UUID] = None,
+        vigil_ids: List[UUID] = None,
+        ignore_id: int = None,
+    ):
         if vigil_ids:
             if ignore_id in vigil_ids:
                 vigil_ids.remove(ignore_id)
@@ -39,8 +45,12 @@ class ScheduleRepository(IScheduleRepository):
         result = (await self.session.execute(stmt)).scalars().all()
         return result
 
-
-    async def save_responsible_schedule(self, responsible: dict[str, int], start_date: datetime, end_date: datetime):
+    async def save_responsible_schedule(
+        self,
+        responsible: dict[str, int],
+        start_date: datetime,
+        end_date: datetime,
+    ):
         """
         Метод для загрузки данных об графике ответственных в БД, предварительно удалив старые данные для предостережения от пересечений
         """
@@ -51,14 +61,18 @@ class ScheduleRepository(IScheduleRepository):
             if not result:
                 raise VigilsTypeNotFound("В БД отсутствуют типы дежурств")
 
-            vigil_resp_id = next((v.id for v in result if v.name == "Ответственный"), None)
+            vigil_resp_id = next(
+                (v.id for v in result if v.name == "Ответственный"), None
+            )
             if not vigil_resp_id:
-                raise VigilsTypeNotFound("В БД отсутствуют тип дежурства 'Ответственный'")
+                raise VigilsTypeNotFound(
+                    "В БД отсутствуют тип дежурства 'Ответственный'"
+                )
 
             stmt = select(ScheduleVigil).where(
                 and_(
                     ScheduleVigil.date.between(start_date, end_date),
-                    ScheduleVigil.vigil_id == vigil_resp_id
+                    ScheduleVigil.vigil_id == vigil_resp_id,
                 )
             )
             existing = (await self.session.execute(stmt)).scalars().all()
@@ -67,7 +81,11 @@ class ScheduleRepository(IScheduleRepository):
                 await self.session.delete(ev)
 
             for date, user_id in responsible.items():
-                schedule = ScheduleVigil(date=datetime.strptime(date, "%d-%m-%Y"), user_id=user_id, vigil_id=vigil_resp_id)
+                schedule = ScheduleVigil(
+                    date=datetime.strptime(date, "%d-%m-%Y"),
+                    user_id=user_id,
+                    vigil_id=vigil_resp_id,
+                )
                 self.session.add(schedule)
 
             await self.session.commit()
@@ -79,13 +97,17 @@ class ScheduleRepository(IScheduleRepository):
             await self.session.rollback()
             raise e
 
-    async def save_group_control_schedule(self, group_control_schedule: list, start_date, end_date):
+    async def save_group_control_schedule(
+        self, group_control_schedule: list, start_date, end_date
+    ):
         """
         Сохраняет записи графика группы контроля.
         Сначала удаляет старые записи за период, затем добавляет новые.
         """
         try:
-            stmt = select(ScheduleGC).where(ScheduleGC.date.between(start_date, end_date))
+            stmt = select(ScheduleGC).where(
+                ScheduleGC.date.between(start_date, end_date)
+            )
             result = (await self.session.execute(stmt)).scalars().all()
             for gc in result:
                 await self.session.delete(gc)
@@ -105,7 +127,9 @@ class ScheduleRepository(IScheduleRepository):
             await self.session.rollback()
             raise e
 
-    async def save_vigils_schedule(self, vigils_schedule: dict, start_date: datetime, end_date:datetime):
+    async def save_vigils_schedule(
+        self, vigils_schedule: dict, start_date: datetime, end_date: datetime
+    ):
         try:
             stmt = select(VigilEnum).where(VigilEnum.is_deleted.is_(False))
             vigils_types = (await self.session.execute(stmt)).scalars().all()
@@ -113,14 +137,18 @@ class ScheduleRepository(IScheduleRepository):
             if not vigils_types:
                 raise VigilsTypeNotFound("В БД отсутствуют типы дежурств")
 
-            vigil_resp_id = next((v.id for v in vigils_types if v.name == "Ответственный"), None)
+            vigil_resp_id = next(
+                (v.id for v in vigils_types if v.name == "Ответственный"), None
+            )
             if not vigil_resp_id:
-                raise VigilsTypeNotFound("В БД отсутствуют тип дежурства 'Ответственный'")
+                raise VigilsTypeNotFound(
+                    "В БД отсутствуют тип дежурства 'Ответственный'"
+                )
 
             stmt = select(ScheduleVigil).where(
                 and_(
                     ScheduleVigil.date.between(start_date, end_date),
-                    ScheduleVigil.vigil_id != vigil_resp_id
+                    ScheduleVigil.vigil_id != vigil_resp_id,
                 )
             )
             old_vigils = (await self.session.execute(stmt)).scalars().all()
@@ -137,63 +165,98 @@ class ScheduleRepository(IScheduleRepository):
                         continue
 
                     temp_str = user_excel_vigil
-                    if 'ЗН Р' in temp_str:
-                        temp_str = temp_str.replace('ЗН Р', '')
+                    if "ЗН Р" in temp_str:
+                        temp_str = temp_str.replace("ЗН Р", "")
 
                         for item in vigils_types:
-                            if item.name_in_csv == "ЗН Р" and item.post_in_csv == user_excel_position:
-                                schedule = ScheduleVigil(date=datetime.strptime(date_str, "%Y-%m-%d"), user_id=user_id, vigil_id=item.id)
+                            if (
+                                item.name_in_csv == "ЗН Р"
+                                and item.post_in_csv == user_excel_position
+                            ):
+                                schedule = ScheduleVigil(
+                                    date=datetime.strptime(
+                                        date_str, "%Y-%m-%d"
+                                    ),
+                                    user_id=user_id,
+                                    vigil_id=item.id,
+                                )
                                 self.session.add(schedule)
                                 break
 
-                    if 'РГ' in temp_str:
-                        temp_str = temp_str.replace('РГ', '')
+                    if "РГ" in temp_str:
+                        temp_str = temp_str.replace("РГ", "")
 
                         for item in vigils_types:
                             if item.name_in_csv == "РГ":
-                                schedule = ScheduleVigil(date=datetime.strptime(date_str, "%Y-%m-%d"), user_id=user_id, vigil_id=item.id)
+                                schedule = ScheduleVigil(
+                                    date=datetime.strptime(
+                                        date_str, "%Y-%m-%d"
+                                    ),
+                                    user_id=user_id,
+                                    vigil_id=item.id,
+                                )
                                 self.session.add(schedule)
                                 break
 
-                    if 'Р' in temp_str:
-                        temp_str = temp_str.replace('Р', '')
+                    if "Р" in temp_str:
+                        temp_str = temp_str.replace("Р", "")
 
                         for item in vigils_types:
-                            if item.name_in_csv == "Р" and item.post_in_csv == user_excel_position:
-                                schedule = ScheduleVigil(date=datetime.strptime(date_str, "%Y-%m-%d"), user_id=user_id,
-                                                         vigil_id=item.id)
+                            if (
+                                item.name_in_csv == "Р"
+                                and item.post_in_csv == user_excel_position
+                            ):
+                                schedule = ScheduleVigil(
+                                    date=datetime.strptime(
+                                        date_str, "%Y-%m-%d"
+                                    ),
+                                    user_id=user_id,
+                                    vigil_id=item.id,
+                                )
                                 self.session.add(schedule)
                                 break
 
-                    if 'ЗН ДТП' in temp_str:
-                        temp_str = temp_str.replace('ЗН ДТП', '')
+                    if "ЗН ДТП" in temp_str:
+                        temp_str = temp_str.replace("ЗН ДТП", "")
 
                         for item in vigils_types:
                             if item.name_in_csv == "ЗН ДТП":
-                                schedule = ScheduleVigil(date=datetime.strptime(date_str, "%Y-%m-%d"), user_id=user_id,
-                                                         vigil_id=item.id)
+                                schedule = ScheduleVigil(
+                                    date=datetime.strptime(
+                                        date_str, "%Y-%m-%d"
+                                    ),
+                                    user_id=user_id,
+                                    vigil_id=item.id,
+                                )
                                 self.session.add(schedule)
                                 break
 
-                    if 'ДТП' in temp_str:
-                        temp_str = temp_str.replace('ДТП', '')
+                    if "ДТП" in temp_str:
+                        temp_str = temp_str.replace("ДТП", "")
 
                         for item in vigils_types:
                             if item.name_in_csv == "ДТП":
-                                schedule = ScheduleVigil(date=datetime.strptime(date_str, "%Y-%m-%d"), user_id=user_id,
-                                                         vigil_id=item.id)
+                                schedule = ScheduleVigil(
+                                    date=datetime.strptime(
+                                        date_str, "%Y-%m-%d"
+                                    ),
+                                    user_id=user_id,
+                                    vigil_id=item.id,
+                                )
                                 self.session.add(schedule)
                                 break
 
                     for item in vigils_types:
                         if item.name_in_csv in temp_str:
-                            temp_str = temp_str.replace(item.name_in_csv, '')
-                            schedule = ScheduleVigil(date=datetime.strptime(date_str, "%Y-%m-%d"), user_id=user_id,
-                                                     vigil_id=item.id)
+                            temp_str = temp_str.replace(item.name_in_csv, "")
+                            schedule = ScheduleVigil(
+                                date=datetime.strptime(date_str, "%Y-%m-%d"),
+                                user_id=user_id,
+                                vigil_id=item.id,
+                            )
                             self.session.add(schedule)
 
             await self.session.commit()
-
 
         except IntegrityError as e:
             await self.session.rollback()
@@ -205,17 +268,20 @@ class ScheduleRepository(IScheduleRepository):
             await self.session.rollback()
             raise e
 
-
-    async def get_vigils_type(self, name: List[str]=None):
+    async def get_vigils_type(self, name: List[str] = None):
         stmt = select(VigilEnum).where(VigilEnum.is_deleted.is_(False))
         if name:
             stmt = stmt.where(VigilEnum.name.in_(name))
         result = (await self.session.execute(stmt)).scalars().all()
         if not result:
-            raise VigilsTypeNotFound("Vigils type not added in db, maybe you not run utils route to create base working data")
+            raise VigilsTypeNotFound(
+                "Vigils type not added in db, maybe you not run utils route to create base working data"
+            )
         return result
 
-    async def create_vigils_type(self, data: List[VigilEnumEntity]) -> List[VigilEnumEntity]:
+    async def create_vigils_type(
+        self, data: List[VigilEnumEntity]
+    ) -> List[VigilEnumEntity]:
         if not data:
             return []
         vigils_orm = [VigilEnum(**v.to_dict()) for v in data]
@@ -223,4 +289,3 @@ class ScheduleRepository(IScheduleRepository):
         self.session.add_all(vigils_orm)
         await self.session.commit()
         return [VigilEnumEntity.from_model(v) for v in vigils_orm]
-

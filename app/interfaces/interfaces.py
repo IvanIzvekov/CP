@@ -16,29 +16,40 @@ class IScheduleRepository(ABC):
     async def create_vigils_type(self, data: List[VigilEnumEntity]):
         raise NotImplementedError
 
-
     @abstractmethod
-    async def get_vigils(self, start_at:datetime, end_at:datetime, user_ids:List[UUID], vigil_ids:List[UUID], ignore_id:int=None):
+    async def get_vigils(
+        self,
+        start_at: datetime,
+        end_at: datetime,
+        user_ids: List[UUID],
+        vigil_ids: List[UUID],
+        ignore_id: int = None,
+    ):
         raise NotImplementedError
 
-
     @abstractmethod
-    async def save_responsible_schedule(self, responsible: dict, start_date: datetime, end_date: datetime):
+    async def save_responsible_schedule(
+        self, responsible: dict, start_date: datetime, end_date: datetime
+    ):
         raise NotImplementedError
 
-
     @abstractmethod
-    async def save_group_control_schedule(self, group_control_schedule: list, start_date: datetime, end_date: datetime):
+    async def save_group_control_schedule(
+        self,
+        group_control_schedule: list,
+        start_date: datetime,
+        end_date: datetime,
+    ):
         raise NotImplementedError
 
-
     @abstractmethod
-    async def get_vigils_type(self, name: List[str]=None):
+    async def get_vigils_type(self, name: List[str] = None):
         raise NotImplementedError
 
-
     @abstractmethod
-    async def save_vigils_schedule(self, vigils_schedule: dict, start_date: datetime, end_date:datetime):
+    async def save_vigils_schedule(
+        self, vigils_schedule: dict, start_date: datetime, end_date: datetime
+    ):
         raise NotImplementedError
 
 
@@ -51,13 +62,14 @@ class IUserRepository(ABC):
     async def get_superusers(self) -> List[UserEntity] | None:
         raise NotImplementedError
 
-
     @abstractmethod
     async def create_posts(self, data: List[PostEntity]) -> List[PostEntity]:
         raise NotImplementedError
 
     @abstractmethod
-    async def create_company_duties(self, data: List[CompanyDutyEntity]) -> List[CompanyDutyEntity]:
+    async def create_company_duties(
+        self, data: List[CompanyDutyEntity]
+    ) -> List[CompanyDutyEntity]:
         raise NotImplementedError
 
     @abstractmethod
@@ -68,16 +80,12 @@ class IUserRepository(ABC):
     async def get_users_from_ids(self, user_id: List[UUID] = None) -> list:
         raise NotImplementedError
 
-
     @abstractmethod
     async def get_by_id(self, user_id: UUID) -> UserEntity | None:
         raise NotImplementedError
 
     @abstractmethod
-    async def create(
-        self,
-        user: UserEntity
-    ) -> UserEntity:
+    async def create(self, user: UserEntity) -> UserEntity:
         raise NotImplementedError
 
     @abstractmethod
@@ -113,7 +121,9 @@ class ITaskRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def get(self, task_ids: List[UUID], owner_id: UUID, responsible_id: UUID) -> List[TaskEntity]:
+    async def get(
+        self, task_ids: List[UUID], owner_id: UUID, responsible_id: UUID
+    ) -> List[TaskEntity]:
         raise NotImplementedError
 
     @abstractmethod

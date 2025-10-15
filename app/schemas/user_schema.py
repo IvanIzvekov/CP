@@ -1,7 +1,7 @@
 from typing import List, Literal, Optional
+from uuid import UUID
 
 from pydantic import BaseModel
-from uuid import UUID
 
 
 class UserCreate(BaseModel):

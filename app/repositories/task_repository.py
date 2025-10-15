@@ -23,8 +23,10 @@ class TaskRepository(ITaskRepository):
     async def get_by_id(self, task_id: UUID) -> TaskEntity:
         pass
 
-    async def get(self,
-                  task_ids: List[UUID] = None,
-                  owner_id: UUID = None,
-                  responsible_id: UUID = None) -> List[TaskEntity]:
+    async def get(
+        self,
+        task_ids: List[UUID] = None,
+        owner_id: UUID = None,
+        responsible_id: UUID = None,
+    ) -> List[TaskEntity]:
         pass

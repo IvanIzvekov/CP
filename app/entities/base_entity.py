@@ -1,5 +1,6 @@
-from typing import Any, Dict, List, Optional, get_args, get_origin
 from datetime import datetime
+from typing import Any, Dict, List, Optional, get_args, get_origin
+
 from app.models.base_model import Base
 
 
@@ -67,8 +68,15 @@ class BaseEntity:
             if origin_type in (list, List) and args:
                 inner_type = args[0]
                 if isinstance(value, list):
-                    if load_relations and hasattr(inner_type, 'from_model'):
-                        data[field] = [inner_type.from_model(v, load_relations=True) if isinstance(v, Base) else v for v in value]
+                    if load_relations and hasattr(inner_type, "from_model"):
+                        data[field] = [
+                            (
+                                inner_type.from_model(v, load_relations=True)
+                                if isinstance(v, Base)
+                                else v
+                            )
+                            for v in value
+                        ]
                     else:
                         data[field] = value
                 else:
@@ -78,15 +86,27 @@ class BaseEntity:
             # Optional
             if origin_type is Optional and args:
                 inner_type = args[0]
-                if load_relations and hasattr(inner_type, 'from_model') and isinstance(value, Base):
-                    data[field] = inner_type.from_model(value, load_relations=True)
+                if (
+                    load_relations
+                    and hasattr(inner_type, "from_model")
+                    and isinstance(value, Base)
+                ):
+                    data[field] = inner_type.from_model(
+                        value, load_relations=True
+                    )
                 else:
                     data[field] = value
                 continue
 
             # Entity
-            if load_relations and hasattr(entity_type, 'from_model') and isinstance(value, Base):
-                data[field] = entity_type.from_model(value, load_relations=True)
+            if (
+                load_relations
+                and hasattr(entity_type, "from_model")
+                and isinstance(value, Base)
+            ):
+                data[field] = entity_type.from_model(
+                    value, load_relations=True
+                )
                 continue
 
             # Простые поля

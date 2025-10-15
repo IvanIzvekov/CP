@@ -24,20 +24,29 @@ class UserRepository(IUserRepository):
         self.session = session
 
     async def get_superusers(self) -> list[UserEntity] | None:
-        stmt = select(User.id,
-                      User.username,
-                      User.name,
-                      User.surname,
-                      User.second_name,
-                      User.hashed_password,
-                      User.is_superuser,
-                      User.is_deleted,
-                      User.register_at,
-                      User.invocation,
-                      User.short_name,
-                      User.short_name_2).where(User.is_superuser == True, User.is_deleted == False)
+        stmt = select(
+            User.id,
+            User.username,
+            User.name,
+            User.surname,
+            User.second_name,
+            User.hashed_password,
+            User.is_superuser,
+            User.is_deleted,
+            User.register_at,
+            User.invocation,
+            User.short_name,
+            User.short_name_2,
+        ).where(User.is_superuser == True, User.is_deleted == False)
         result = (await self.session.execute(stmt)).scalars().all()
-        return [UserEntity.from_model(user, load_relations=False) for user in result] if result else None
+        return (
+            [
+                UserEntity.from_model(user, load_relations=False)
+                for user in result
+            ]
+            if result
+            else None
+        )
 
     async def create_ranks(self, data: List[RankEntity]) -> List[RankEntity]:
         if not data:
@@ -57,7 +66,9 @@ class UserRepository(IUserRepository):
         await self.session.commit()
         return [PostEntity.from_model(d) for d in post_orm]
 
-    async def get_users_from_ids(self, user_id: List[UUID] = None) -> list[UserEntity]:
+    async def get_users_from_ids(
+        self, user_id: List[UUID] = None
+    ) -> list[UserEntity]:
         stmt = select(User).options(
             selectinload(User.rank),
             selectinload(User.post),
@@ -70,7 +81,9 @@ class UserRepository(IUserRepository):
         result = (await self.session.execute(stmt)).scalars().all()
         return [UserEntity.from_model(user) for user in result]
 
-    async def create_company_duties(self, data: List[CompanyDutyEntity]) -> List[CompanyDutyEntity]:
+    async def create_company_duties(
+        self, data: List[CompanyDutyEntity]
+    ) -> List[CompanyDutyEntity]:
         if not data:
             return []
         company_duties = [CompanyDuty(**d.to_dict()) for d in data]
@@ -79,9 +92,11 @@ class UserRepository(IUserRepository):
         return [CompanyDutyEntity.from_model(d) for d in company_duties]
 
     async def get_user_duties(self, user: UserEntity) -> UserEntity:
-        stmt = select(User).options(
-            selectinload(User.duties)
-        ).where(User.id == user.id)
+        stmt = (
+            select(User)
+            .options(selectinload(User.duties))
+            .where(User.id == user.id)
+        )
         result = (await self.session.execute(stmt)).scalar_one_or_none()
 
         if not result:
@@ -142,7 +157,9 @@ class UserRepository(IUserRepository):
         except IntegrityError as e:
             await logger.error(e)
             await self.session.rollback()
-            raise UserAlreadyExistsError(f"User '{user.username}' already exists")
+            raise UserAlreadyExistsError(
+                f"User '{user.username}' already exists"
+            )
 
     async def save_refresh_token(self, user_id: UUID, refresh_token: str):
         stmt = select(RefreshToken).where(RefreshToken.user_id == user_id)
@@ -151,7 +168,9 @@ class UserRepository(IUserRepository):
         if existing:
             existing.token = refresh_token
         else:
-            self.session.add(RefreshToken(user_id=user_id, token=refresh_token))
+            self.session.add(
+                RefreshToken(user_id=user_id, token=refresh_token)
+            )
 
         await self.session.commit()
 
@@ -180,13 +199,23 @@ class UserRepository(IUserRepository):
         return UserEntity.from_model(User, load_relations=True)
 
     async def get_duty_users(self, duty_id: UUID) -> List[UserEntity]:
-        stmt = select(User).options(selectinload(User.duties),
-                                    selectinload(User.rank),
-                                    selectinload(User.post),
-                                    selectinload(User.projects),
-                                    selectinload(User.responsible_tasks)
-                                    ).where(User.duties.any(CompanyDuty.id == duty_id))
+        stmt = (
+            select(User)
+            .options(
+                selectinload(User.duties),
+                selectinload(User.rank),
+                selectinload(User.post),
+                selectinload(User.projects),
+                selectinload(User.responsible_tasks),
+            )
+            .where(User.duties.any(CompanyDuty.id == duty_id))
+        )
         result = (await self.session.execute(stmt)).scalars().all()
-        return [UserEntity.from_model(user, load_relations=True) for user in result] if result else []
-
-
+        return (
+            [
+                UserEntity.from_model(user, load_relations=True)
+                for user in result
+            ]
+            if result
+            else []
+        )

@@ -1,11 +1,10 @@
-from app.entities.base_entity import BaseEntity
-from uuid import UUID
-from datetime import datetime
-
 from dataclasses import dataclass
+from datetime import datetime
+from uuid import UUID
 
-from app.entities.vigil_enum import VigilEnumEntity
+from app.entities.base_entity import BaseEntity
 from app.entities.user import UserEntity
+from app.entities.vigil_enum import VigilEnumEntity
 
 
 @dataclass

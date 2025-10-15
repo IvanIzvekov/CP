@@ -4,10 +4,21 @@ import traceback
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from prometheus_fastapi_instrumentator import Instrumentator
-from sqlalchemy.exc import DBAPIError, OperationalError, SQLAlchemyError, StatementError
+from sqlalchemy.exc import (
+    DBAPIError,
+    OperationalError,
+    SQLAlchemyError,
+    StatementError,
+)
 from starlette.responses import PlainTextResponse
 
-from app.api.v1 import auth_routers, minio_routers, shedule_routers, user_routers, utils_routers
+from app.api.v1 import (
+    auth_routers,
+    minio_routers,
+    shedule_routers,
+    user_routers,
+    utils_routers,
+)
 from app.core.config import settings
 from app.core.database import engine, init_db, shutdown_db
 
@@ -54,7 +65,9 @@ async def db_exception_middleware(request: Request, call_next):
     except OperationalError:
         return JSONResponse(
             status_code=503,
-            content={"detail": "Database is unavailable. Please try again later."},
+            content={
+                "detail": "Database is unavailable. Please try again later."
+            },
         )
 
     except DBAPIError as e:
@@ -73,8 +86,8 @@ async def db_exception_middleware(request: Request, call_next):
                 status_code=500,
                 content={
                     "detail": "Async context lost (greenlet_spawn). "
-                              "A SQLAlchemy async operation was called "
-                              "outside of an async context or after session commit."
+                    "A SQLAlchemy async operation was called "
+                    "outside of an async context or after session commit."
                 },
             )
         return JSONResponse(
@@ -98,10 +111,10 @@ async def db_exception_middleware(request: Request, call_next):
             content={"detail": str(e)},
         )
 
+
 # Роутеры
 app.include_router(user_routers.router, prefix="/api/v1")
 app.include_router(auth_routers.router, prefix="/api/v1")
 app.include_router(minio_routers.router, prefix="/api/v1")
 app.include_router(shedule_routers.router, prefix="/api/v1")
 app.include_router(utils_routers.router, prefix="/api/v1")
-

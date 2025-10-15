@@ -4,10 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_session
 from app.entities.user import UserEntity
-from app.exceptions.exceptions import (
-    InvalidRefreshTokenError,
-    UserNotFoundError,
-)
+from app.exceptions.exceptions import InvalidRefreshTokenError, UserNotFoundError
 from app.repositories.user_repository import UserRepository
 from app.services.auth_service import AuthService
 

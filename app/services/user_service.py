@@ -26,11 +26,11 @@ class UserService:
         hashed_password = await self.hash_password(user_entity.hashed_password)
         user_entity.hashed_password = hashed_password
 
-        user_entity.short_name = f"{user_entity.name[0]}. {user_entity.surname}"
-        user_entity.short_name_2 = f"{user_entity.surname} {user_entity.name[0]}.{user_entity.second_name[0] if user_entity.second_name else ''}{'.' if user_entity.second_name else ''}"
-        user = await self.user_repo.create(
-            user=user_entity
+        user_entity.short_name = (
+            f"{user_entity.name[0]}. {user_entity.surname}"
         )
+        user_entity.short_name_2 = f"{user_entity.surname} {user_entity.name[0]}.{user_entity.second_name[0] if user_entity.second_name else ''}{'.' if user_entity.second_name else ''}"
+        user = await self.user_repo.create(user=user_entity)
         return user
 
     async def hash_password(self, password: str) -> str:
@@ -41,8 +41,9 @@ class UserService:
     ) -> bool:
         return self.pwd_context.verify(plain_password, hashed_password)
 
-
-    async def get_users_from_ids(self, user_id: List[UUID] = None) -> List[UserEntity]:
+    async def get_users_from_ids(
+        self, user_id: List[UUID] = None
+    ) -> List[UserEntity]:
         users = await self.user_repo.get_users_from_ids(user_id)
         if not users:
             raise UserNotFoundError("Users not found")
